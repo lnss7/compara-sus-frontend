@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light Mode Palette Tokens */
+  --background: 248 250 252;          /* #f8fafc */
+  --surface: 255 255 255;             /* #ffffff */
+  --surface-container: 248 250 252;   /* #f8fafc */
+  --surface-container-high: 241 245 249; /* #f1f5f9 */
+  --surface-container-highest: 226 232 240; /* #e2e8f0 */
+  --surface-container-lowest: 255 255 255; /* #ffffff */
+  --on-surface: 15 23 42;             /* #0f172a */
+  --on-surface-variant: 71 85 105;    /* #475569 */
+  --outline-variant: 203 213 225;     /* #cbd5e1 */
+  --outline: 148 163 184;             /* #94a3b8 */
+  --sidebar-bg: 15 23 42;             /* #0f172a */
+  --primary: 37 99 235;               /* #2563eb */
+  --primary-container: 37 99 235;
+  --on-primary: 255 255 255;
+  --on-primary-container: 255 255 255;
+  --secondary: 16 185 129;            /* #10b981 */
+  --secondary-container: 220 252 231;
+  --on-secondary-container: 6 78 59;
+  --tertiary: 245 158 11;             /* #f59e0b */
+  --tertiary-container: 254 243 199;
+  --on-tertiary-container: 146 64 14;
+  --error: 239 68 68;
+  --error-container: 254 226 226;
+}
+
+.dark {
+  /* Dark Mode Palette Tokens */
+  --background: 11 19 38;             /* #0b1326 */
+  --surface: 11 19 38;                /* #0b1326 */
+  --surface-container: 23 31 51;      /* #171f33 */
+  --surface-container-high: 34 42 61; /* #222a3d */
+  --surface-container-highest: 45 52 73; /* #2d3449 */
+  --surface-container-lowest: 6 14 32;  /* #060e20 */
+  --on-surface: 218 226 253;          /* #dae2fd */
+  --on-surface-variant: 195 198 215;  /* #c3c6d7 */
+  --outline-variant: 67 70 85;        /* #434655 */
+  --outline: 141 144 160;             /* #8d90a0 */
+  --sidebar-bg: 6 14 32;              /* #060e20 */
+  --primary: 180 197 255;            /* #b4c5ff */
+  --primary-container: 37 99 235;
+  --on-primary: 0 42 120;
+  --on-primary-container: 238 239 255;
+  --secondary: 78 222 163;           /* #4edea3 */
+  --secondary-container: 0 165 114;
+  --on-secondary-container: 0 49 31;
+  --tertiary: 255 185 95;            /* #ffb95f */
+  --tertiary-container: 153 97 0;
+  --on-tertiary-container: 255 238 221;
+  --error: 255 180 171;
+  --error-container: 147 0 10;
+}
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body {
+    overscroll-behavior: none;
+  }
+  main > :first-child {
+    margin-top: 0 !important;
+  }
+  main > :last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Standardization Utility Classes for Typography */
+@layer utilities {
+  .text-page-title {
+    @apply font-display-lg text-display-lg text-on-surface tracking-tight;
+  }
+  .text-section-title {
+    @apply font-headline-md text-headline-md text-on-surface tracking-tight;
+  }
+  .text-card-title {
+    @apply font-headline-sm text-headline-sm text-on-surface;
+  }
+  .text-body-lead {
+    @apply font-body-lg text-body-lg text-on-surface-variant;
+  }
+  .text-body-content {
+    @apply font-body-md text-body-md text-on-surface;
+  }
+  .text-body-muted {
+    @apply font-body-sm text-body-sm text-on-surface-variant;
+  }
+  .text-label-caps {
+    @apply font-label-md text-label-md text-on-surface-variant uppercase tracking-wider;
+  }
+  .text-code-mono {
+    @apply font-mono-data text-mono-data text-secondary;
+  }
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
