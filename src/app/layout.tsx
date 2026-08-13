@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CrossSUS • Cruzador de Dados da Saúde SMS Porto Alegre',
+  title: 'COMPARA-SUS • Cruzador de Dados da Saúde SMS Porto Alegre',
   description: 'Cruzamento e higienização client-side de bases e-SUS e SIAPS com conformidade 100% LGPD.',
 };
 
@@ -30,9 +30,9 @@ export default function RootLayout({
     <html lang="pt-br" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-background font-body-md text-on-surface antialiased">
         <Sidebar />
-        <div className="pl-[280px]">
+        <div className="pl-[280px] print:pl-0">
           <Header />
-          <main className="relative pt-16 min-h-screen bg-surface px-gutter pb-gutter">
+          <main className="relative pt-16 print:pt-0 min-h-screen bg-surface print:bg-white px-gutter print:px-0 pb-gutter print:pb-0">
             {children}
           </main>
         </div>

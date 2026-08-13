@@ -17,7 +17,7 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[280px] bg-[#060e20] dark:bg-surface-container-lowest z-50 flex flex-col border-r border-outline-variant/20 shadow-xl shadow-black/20 text-on-surface">
+    <aside className="fixed left-0 top-0 h-full w-[280px] bg-[#060e20] dark:bg-surface-container-lowest z-50 flex flex-col border-r border-outline-variant/20 shadow-xl shadow-black/20 text-on-surface print:hidden">
       {/* Brand Header */}
       <div className="p-6 mb-4 flex items-center gap-stack-sm">
         <div className="w-10 h-10 rounded-xl bg-secondary/10 border border-secondary/20 flex items-center justify-center font-bold text-secondary text-xl">
@@ -25,7 +25,7 @@ export function Sidebar() {
         </div>
         <div className="flex flex-col">
           <span className="font-headline-sm text-headline-sm text-secondary tracking-tight">
-            CrossSUS
+            COMPARA-SUS
           </span>
           <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
             SMS • Porto Alegre

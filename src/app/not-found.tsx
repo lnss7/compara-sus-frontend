@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
       <h1 className="font-display-lg text-display-lg text-on-surface">404</h1>
       <p className="font-body-lg text-body-lg text-on-surface-variant">
-        Página não encontrada no sistema CrossSUS.
+        Página não encontrada no sistema COMPARA-SUS.
       </p>
       <Link
         href="/"

@@ -18,7 +18,7 @@ export function Header() {
   }, [theme]);
 
   return (
-    <header className="fixed top-0 left-[280px] right-0 h-16 bg-surface/80 backdrop-blur-md z-40 flex items-center px-gutter justify-between border-b border-outline-variant/10 transition-colors duration-300">
+    <header className="fixed top-0 left-[280px] right-0 h-16 bg-surface/80 backdrop-blur-md z-40 flex items-center px-gutter justify-between border-b border-outline-variant/10 transition-colors duration-300 print:hidden">
       {/* Left items: Security badge & RAM status */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2 bg-surface-container-high/50 px-3 py-1.5 rounded-full border border-outline-variant/20">

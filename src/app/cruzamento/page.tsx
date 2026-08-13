@@ -21,13 +21,15 @@ import {
   ChevronRight,
   Cpu,
 } from 'lucide-react';
-import { useCrossSUSStore } from '@/lib/store';
+import { useComparaSUSStore } from '@/lib/store';
 
 export default function CruzamentoWorkspacePage() {
-  const { arquivos, pacientes, kpis, limparMemoria } = useCrossSUSStore();
+  const { arquivos, pacientes, kpis, limparMemoria, processarArquivosReais, exportarExcel, isProcessing } =
+    useComparaSUSStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
   const [teamFilter, setTeamFilter] = useState<string>('TODAS');
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const filteredPacientes = useMemo(() => {
     return pacientes.filter((p) => {
@@ -53,8 +55,39 @@ export default function CruzamentoWorkspacePage() {
     });
   }, [pacientes, searchTerm, statusFilter, teamFilter]);
 
+  const equipesUnicas = useMemo(() => {
+    const set = new Set<string>();
+    pacientes.forEach((p) => {
+      if (p.equipe && p.equipe !== '-') set.add(p.equipe);
+    });
+    return Array.from(set).sort();
+  }, [pacientes]);
+
   const esusFile = arquivos.find((a) => a.tipo === 'e-SUS AB');
   const siapsFile = arquivos.find((a) => a.tipo === 'SIAPS');
+
+  const handleProcessar = async () => {
+    setFeedbackMsg(null);
+    const res = await processarArquivosReais();
+    if (!res.sucesso) {
+      setFeedbackMsg(res.erros?.join(' ') || 'Erro ao processar.');
+    } else {
+      setFeedbackMsg('Cruzamento de dados concluído com sucesso!');
+    }
+  };
+
+  const handleExportar = () => {
+    const statusFiltroReal =
+      statusFilter === 'AMBAS'
+        ? 'PRESENTE NAS DUAS PLANILHAS'
+        : statusFilter === 'ESUS'
+        ? 'PRESENTE APENAS NA PLANILHA 1 (e-SUS)'
+        : statusFilter === 'SIAPS'
+        ? 'PRESENTE APENAS NA PLANILHA 2 (SIAPS)'
+        : undefined;
+
+    exportarExcel(statusFiltroReal);
+  };
 
   return (
     <PageTransition>
@@ -87,55 +120,91 @@ export default function CruzamentoWorkspacePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             {/* File Card e-SUS */}
             <div className="bg-surface flex items-center p-3.5 rounded-lg border border-outline-variant/20">
-              <div className="w-10 h-10 rounded bg-secondary/10 flex items-center justify-center mr-3 border border-secondary/20">
-                <Table className="w-5 h-5 text-secondary" />
+              <div
+                className={`w-10 h-10 rounded flex items-center justify-center mr-3 border ${
+                  esusFile
+                    ? 'bg-secondary/10 border-secondary/20 text-secondary'
+                    : 'bg-outline-variant/10 border-outline-variant/20 text-on-surface-variant'
+                }`}
+              >
+                <Table className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <p className="font-label-md text-label-md text-on-surface-variant uppercase">
                     BASE E-SUS
                   </p>
-                  <CheckCircle2 className="w-4 h-4 text-secondary" />
+                  {esusFile ? (
+                    <CheckCircle2 className="w-4 h-4 text-secondary" />
+                  ) : (
+                    <span className="text-[10px] font-mono-data text-on-surface-variant/70 bg-surface-container-high px-2 py-0.5 rounded">
+                      NÃO CARREGADO
+                    </span>
+                  )}
                 </div>
-                <p className="font-body-md text-body-md text-on-surface truncate mt-0.5">
-                  {esusFile ? esusFile.nome : 'Exemplo_eSUS_2026.xlsx'}
+                <p className="font-body-md text-body-md text-on-surface truncate mt-0.5 font-medium">
+                  {esusFile ? esusFile.nome : 'Nenhum arquivo e-SUS selecionado'}
                 </p>
                 <p className="font-mono-data text-mono-data text-on-surface-variant text-[11px] mt-0.5">
-                  {esusFile ? `${esusFile.registros.toLocaleString('pt-BR')} linhas processadas` : '4.571 linhas processadas'}
+                  {esusFile
+                    ? `${esusFile.registros.toLocaleString('pt-BR')} linhas processadas`
+                    : 'Aguardando importação'}
                 </p>
               </div>
             </div>
 
             {/* File Card SIAPS */}
             <div className="bg-surface flex items-center p-3.5 rounded-lg border border-outline-variant/20">
-              <div className="w-10 h-10 rounded bg-secondary/10 flex items-center justify-center mr-3 border border-secondary/20">
-                <Table className="w-5 h-5 text-secondary" />
+              <div
+                className={`w-10 h-10 rounded flex items-center justify-center mr-3 border ${
+                  siapsFile
+                    ? 'bg-secondary/10 border-secondary/20 text-secondary'
+                    : 'bg-outline-variant/10 border-outline-variant/20 text-on-surface-variant'
+                }`}
+              >
+                <Table className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <p className="font-label-md text-label-md text-on-surface-variant uppercase">
                     BASE SIAPS
                   </p>
-                  <CheckCircle2 className="w-4 h-4 text-secondary" />
+                  {siapsFile ? (
+                    <CheckCircle2 className="w-4 h-4 text-secondary" />
+                  ) : (
+                    <span className="text-[10px] font-mono-data text-on-surface-variant/70 bg-surface-container-high px-2 py-0.5 rounded">
+                      NÃO CARREGADO
+                    </span>
+                  )}
                 </div>
-                <p className="font-body-md text-body-md text-on-surface truncate mt-0.5">
-                  {siapsFile ? siapsFile.nome : 'Exemplo_SIAPS_2026.xlsx'}
+                <p className="font-body-md text-body-md text-on-surface truncate mt-0.5 font-medium">
+                  {siapsFile ? siapsFile.nome : 'Nenhum arquivo SIAPS selecionado'}
                 </p>
                 <p className="font-mono-data text-mono-data text-on-surface-variant text-[11px] mt-0.5">
-                  {siapsFile ? `${siapsFile.registros.toLocaleString('pt-BR')} linhas processadas` : '3.505 linhas processadas'}
+                  {siapsFile
+                    ? `${siapsFile.registros.toLocaleString('pt-BR')} linhas processadas`
+                    : 'Aguardando importação'}
                 </p>
               </div>
             </div>
           </div>
 
+          {feedbackMsg && (
+            <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30 text-primary text-sm font-label-md">
+              {feedbackMsg}
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-primary hover:bg-primary-fixed-dim transition-colors text-on-primary font-label-md text-label-md uppercase px-5 py-2.5 rounded-lg flex items-center gap-2 font-semibold"
+              onClick={handleProcessar}
+              disabled={isProcessing}
+              className="bg-primary hover:bg-primary-fixed-dim transition-colors text-on-primary font-label-md text-label-md uppercase px-5 py-2.5 rounded-lg flex items-center gap-2 font-semibold disabled:opacity-50"
             >
-              <Zap className="w-4 h-4" />
-              PROCESSAR CRUZAMENTO DE DADOS
+              <Zap className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
+              {isProcessing ? 'PROCESSANDO...' : 'PROCESSAR CRUZAMENTO DE DADOS'}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -257,85 +326,120 @@ export default function CruzamentoWorkspacePage() {
 
         {/* Section 3 & 4: Data Grid */}
         <section className="flex flex-col bg-surface-container rounded-xl border border-outline-variant/20 shadow-sm overflow-hidden">
-          {/* Toolbar */}
-          <div className="p-4 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between border-b border-outline-variant/10 bg-surface-container-highest/20">
-            <div className="flex flex-col lg:flex-row gap-4 flex-1 w-full">
-              <div className="relative w-full lg:w-72">
+          {/* Redesigned Toolbar */}
+          <div className="p-4 flex flex-col gap-3.5 border-b border-outline-variant/10 bg-surface-container-highest/15">
+            {/* Row 1: Search + Team Dropdown + Export Button */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                 <input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-surface border border-outline-variant/30 rounded-md py-1.5 pl-9 pr-3 font-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm"
+                  className="w-full bg-surface border border-outline-variant/30 rounded-lg py-2 pl-9 pr-3 font-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm shadow-xs"
                   placeholder="Buscar por Nome, CPF, CNS ou Equipe..."
                   type="text"
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-1.5">
+
+              {/* Action Controls */}
+              <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                {/* Dynamic Team Selector */}
+                <div className="relative min-w-[200px]">
+                  <select
+                    value={teamFilter}
+                    onChange={(e) => setTeamFilter(e.target.value)}
+                    className="w-full appearance-none bg-surface border border-outline-variant/30 rounded-lg py-2 pl-3 pr-8 font-body-md text-on-surface focus:outline-none focus:border-primary transition-all text-sm h-[38px] cursor-pointer shadow-xs"
+                  >
+                    <option value="TODAS">Todas as Equipes ({equipesUnicas.length})</option>
+                    {equipesUnicas.map((eq) => (
+                      <option key={eq} value={eq}>
+                        Equipe: {eq}
+                      </option>
+                    ))}
+                  </select>
+                  <Users className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+                </div>
+
+                {/* Export Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleExportar}
+                  className="px-4 py-2 h-[38px] rounded-lg font-label-md text-label-md bg-secondary text-on-secondary hover:bg-secondary-fixed-dim transition-colors flex items-center gap-2 whitespace-nowrap text-xs font-semibold shadow-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  Exportar Excel Consolidado (.xlsx)
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Row 2: Status Filter Segmented Control Bar */}
+            <div className="flex items-center overflow-x-auto pt-1 pb-0.5 no-scrollbar">
+              <div className="flex items-center bg-surface border border-outline-variant/30 p-1 rounded-xl gap-1 min-w-max shadow-xs">
+                {/* TODOS */}
                 <button
                   onClick={() => setStatusFilter('TODOS')}
-                  className={`px-3 py-1.5 rounded-md font-label-md text-label-md flex items-center gap-1.5 text-xs transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-lg font-label-md text-xs flex items-center gap-2 transition-all ${
                     statusFilter === 'TODOS'
-                      ? 'bg-surface-container-high border border-outline-variant text-on-surface font-semibold'
-                      : 'bg-transparent border border-transparent text-on-surface-variant hover:bg-surface-container-high'
+                      ? 'bg-surface-container-highest text-on-surface font-semibold shadow-xs border border-outline-variant/30'
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50'
                   }`}
                 >
-                  Todos: <span className="font-mono-data text-[11px] opacity-70">{pacientes.length}</span>
+                  <span>Todos os Registros</span>
+                  <span className="px-1.5 py-0.5 bg-surface-container text-on-surface-variant text-[11px] rounded-md font-mono-data font-bold">
+                    {pacientes.length.toLocaleString('pt-BR')}
+                  </span>
                 </button>
+
+                {/* AMBAS */}
                 <button
                   onClick={() => setStatusFilter('AMBAS')}
-                  className={`px-3 py-1.5 rounded-md font-label-md text-label-md flex items-center gap-1.5 text-xs transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-lg font-label-md text-xs flex items-center gap-2 transition-all ${
                     statusFilter === 'AMBAS'
-                      ? 'bg-surface-container-high border border-secondary text-secondary font-semibold'
-                      : 'bg-transparent border border-transparent text-on-surface-variant hover:bg-surface-container-high'
+                      ? 'bg-secondary/15 text-secondary border border-secondary/30 font-semibold shadow-xs'
+                      : 'text-on-surface-variant hover:text-secondary hover:bg-secondary/5'
                   }`}
                 >
-                  <span className="text-[10px]">🟢</span> Ambas:{' '}
-                  <span className="font-mono-data text-[11px] opacity-70">
-                    {pacientes.filter((p) => p.status === 'PRESENTE NAS DUAS PLANILHAS').length}
+                  <span className="w-2 h-2 rounded-full bg-secondary"></span>
+                  <span>Presente em Ambas</span>
+                  <span className="px-1.5 py-0.5 bg-secondary/10 text-secondary text-[11px] rounded-md font-mono-data font-bold">
+                    {kpis.intersecao.toLocaleString('pt-BR')}
                   </span>
                 </button>
+
+                {/* APENAS ESUS */}
                 <button
                   onClick={() => setStatusFilter('ESUS')}
-                  className={`px-3 py-1.5 rounded-md font-label-md text-label-md flex items-center gap-1.5 text-xs transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-lg font-label-md text-xs flex items-center gap-2 transition-all ${
                     statusFilter === 'ESUS'
-                      ? 'bg-surface-container-high border border-primary text-primary font-semibold'
-                      : 'bg-transparent border border-transparent text-on-surface-variant hover:bg-surface-container-high'
+                      ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
+                      : 'text-on-surface-variant hover:text-primary hover:bg-primary/5'
                   }`}
                 >
-                  <span className="text-[10px]">🔵</span> Apenas e-SUS:{' '}
-                  <span className="font-mono-data text-[11px] opacity-70">
-                    {pacientes.filter((p) => p.status === 'PRESENTE APENAS NA PLANILHA 1 (e-SUS)').length}
+                  <span className="w-2 h-2 rounded-full bg-primary"></span>
+                  <span>Apenas e-SUS</span>
+                  <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[11px] rounded-md font-mono-data font-bold">
+                    {kpis.apenasEsus.toLocaleString('pt-BR')}
                   </span>
                 </button>
+
+                {/* APENAS SIAPS */}
                 <button
                   onClick={() => setStatusFilter('SIAPS')}
-                  className={`px-3 py-1.5 rounded-md font-label-md text-label-md flex items-center gap-1.5 text-xs transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-lg font-label-md text-xs flex items-center gap-2 transition-all ${
                     statusFilter === 'SIAPS'
-                      ? 'bg-surface-container-high border border-tertiary text-tertiary font-semibold'
-                      : 'bg-transparent border border-transparent text-on-surface-variant hover:bg-surface-container-high'
+                      ? 'bg-tertiary/15 text-tertiary border border-tertiary/30 font-semibold shadow-xs'
+                      : 'text-on-surface-variant hover:text-tertiary hover:bg-tertiary/5'
                   }`}
                 >
-                  <span className="text-[10px]">🟠</span> Apenas SIAPS:{' '}
-                  <span className="font-mono-data text-[11px] opacity-70">
-                    {pacientes.filter((p) => p.status === 'PRESENTE APENAS NA PLANILHA 2 (SIAPS)').length}
+                  <span className="w-2 h-2 rounded-full bg-tertiary"></span>
+                  <span>Apenas SIAPS</span>
+                  <span className="px-1.5 py-0.5 bg-tertiary/10 text-tertiary text-[11px] rounded-md font-mono-data font-bold">
+                    {kpis.apenasSiaps.toLocaleString('pt-BR')}
                   </span>
                 </button>
               </div>
-            </div>
-            <div className="flex items-center gap-2 w-full lg:w-auto">
-              <select
-                value={teamFilter}
-                onChange={(e) => setTeamFilter(e.target.value)}
-                className="appearance-none bg-surface border border-outline-variant/30 rounded-md py-1.5 pl-3 pr-8 font-body-md text-on-surface focus:outline-none focus:border-primary transition-all text-sm h-[34px]"
-              >
-                <option value="TODAS">Todas as Equipes</option>
-                <option value="ESF ASA BRANCA I">Equipe: ESF ASA BRANCA I</option>
-                <option value="ESF CENTRO">Equipe: ESF CENTRO</option>
-              </select>
-              <button className="px-4 py-1.5 h-[34px] rounded-md font-label-md text-label-md bg-surface-container-high text-on-surface border border-outline-variant/20 hover:bg-surface-container-highest transition-colors flex items-center gap-2 whitespace-nowrap text-xs">
-                <Download className="w-3.5 h-3.5" />
-                Exportar Excel Consolidado (.xlsx)
-              </button>
             </div>
           </div>
 
