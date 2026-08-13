@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, UploadCloud, LineChart, Settings, Palette } from 'lucide-react';
+import { LayoutDashboard, UploadCloud, LineChart, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function Sidebar() {
@@ -13,7 +13,6 @@ export function Sidebar() {
     { name: 'Importação', path: '/', icon: UploadCloud },
     { name: 'Relatórios', path: '/relatorios', icon: LineChart },
     { name: 'Configurações', path: '/configuracoes', icon: Settings },
-    { name: 'Style Guide', path: '/styleguide', icon: Palette },
   ];
 
   return (

@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PageTransition } from '@/components/animation/PageTransition';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { ShieldCheck, Sliders, Plug, Info, Save, Shield, Palette, Lock, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Sliders, Info, Save, Shield, Palette, Lock, CheckCircle2 } from 'lucide-react';
 import { useCrossSUSStore } from '@/lib/store';
 
 export default function ConfiguracoesPage() {
   const { theme, setTheme } = useCrossSUSStore();
-  const [activeTab, setActiveTab] = useState<'seguranca' | 'preferencias' | 'integracoes' | 'sobre'>('seguranca');
+  const [activeTab, setActiveTab] = useState<'seguranca' | 'preferencias' | 'sobre'>('seguranca');
 
   return (
     <PageTransition>
@@ -17,7 +17,7 @@ export default function ConfiguracoesPage() {
         {/* Standardized Page Header matching reference design */}
         <PageHeader
           title="Configurações do Sistema"
-          subtitle="Gerencie preferências locais, segurança de dados e integrações da plataforma."
+          subtitle="Gerencie preferências locais e segurança de dados da plataforma."
           actions={
             <div className="flex gap-4">
               <button className="px-6 py-2.5 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-colors">
@@ -57,16 +57,6 @@ export default function ConfiguracoesPage() {
               }`}
             >
               <Sliders className="w-5 h-5" /> Preferências
-            </button>
-            <button
-              onClick={() => setActiveTab('integracoes')}
-              className={`text-left px-4 py-3 rounded-lg font-label-md text-label-md flex items-center gap-3 transition-colors ${
-                activeTab === 'integracoes'
-                  ? 'bg-surface-container-highest text-on-surface font-semibold'
-                  : 'hover:bg-surface-container-high text-on-surface-variant'
-              }`}
-            >
-              <Plug className="w-5 h-5" /> Integrações
             </button>
             <button
               onClick={() => setActiveTab('sobre')}
