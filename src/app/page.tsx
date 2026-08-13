@@ -83,25 +83,8 @@ export default function ImportacaoPage() {
     }
   };
 
-  const handleIniciarProcessamento = async () => {
-    const esusFile = arquivos.find((a) => a.tipo === 'e-SUS AB');
-    const siapsFile = arquivos.find((a) => a.tipo === 'SIAPS');
-
-    if (!esusFile || !siapsFile) {
-      // Se não houver buffers reais ainda, redireciona para a workspace com dados demonstrativos
-      router.push('/cruzamento');
-      return;
-    }
-
-    if (esusFile.buffer && siapsFile.buffer) {
-      const res = await processarArquivosReais();
-      if (!res.sucesso) {
-        setErrorMsg(res.erros?.join(' ') || 'Erro ao processar planilhas.');
-        return;
-      }
-    }
-
-    router.push('/cruzamento');
+  const handleIniciarProcessamento = () => {
+    router.push('/cruzamento?autoProcess=true');
   };
 
   const temEsus = arquivos.some((a) => a.tipo === 'e-SUS AB');
@@ -109,11 +92,11 @@ export default function ImportacaoPage() {
   const prontoParaProcessar = temEsus && temSiaps;
 
   const getTextoBotaoProcessar = () => {
-    if (isProcessing) return 'Cruzando Dados com Motor de Domínio...';
-    if (!temEsus && !temSiaps) return 'Anexe as 2 Planilhas (e-SUS e SIAPS) para Iniciar';
+    if (isProcessing) return 'Redirecionando para o Dashboard...';
+    if (!temEsus && !temSiaps) return 'Anexe as 2 Planilhas (e-SUS e SIAPS) para Avançar';
     if (temEsus && !temSiaps) return 'Falta Anexar a Base SIAPS (1/2 Carregado)';
     if (!temEsus && temSiaps) return 'Falta Anexar a Base e-SUS (1/2 Carregado)';
-    return 'Iniciar Processamento Analítico (2/2 Prontos)';
+    return 'Ir para o Dashboard e Iniciar Processamento (2/2 Prontos)';
   };
 
   return (

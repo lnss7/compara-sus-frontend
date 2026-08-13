@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/animation/PageTransition';
 import { PageHeader } from '@/components/ui/PageHeader';
 import {
@@ -20,16 +21,26 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
+  Lock,
+  Sparkles,
+  Loader2,
+  FileCheck,
 } from 'lucide-react';
 import { useComparaSUSStore } from '@/lib/store';
 
 export default function CruzamentoWorkspacePage() {
+  const searchParams = useSearchParams();
+  const autoProcess = searchParams.get('autoProcess');
+
   const { arquivos, pacientes, kpis, limparMemoria, processarArquivosReais, exportarExcel, isProcessing } =
     useComparaSUSStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
   const [teamFilter, setTeamFilter] = useState<string>('TODAS');
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+
+  const [processingStep, setProcessingStep] = useState(0);
+  const [processingProgress, setProcessingProgress] = useState(0);
 
   const filteredPacientes = useMemo(() => {
     return pacientes.filter((p) => {
@@ -68,13 +79,37 @@ export default function CruzamentoWorkspacePage() {
 
   const handleProcessar = async () => {
     setFeedbackMsg(null);
+    setProcessingStep(0);
+    setProcessingProgress(15);
+
+    const t1 = setTimeout(() => {
+      setProcessingStep(1);
+      setProcessingProgress(50);
+    }, 400);
+
+    const t2 = setTimeout(() => {
+      setProcessingStep(2);
+      setProcessingProgress(85);
+    }, 900);
+
     const res = await processarArquivosReais();
+
+    clearTimeout(t1);
+    clearTimeout(t2);
+    setProcessingProgress(100);
+
     if (!res.sucesso) {
-      setFeedbackMsg(res.erros?.join(' ') || 'Erro ao processar.');
+      setFeedbackMsg(res.erros?.join(' ') || 'Erro ao processar planilhas.');
     } else {
-      setFeedbackMsg('Cruzamento de dados concluído com sucesso!');
+      setFeedbackMsg('✨ Cruzamento analítico de dados concluído com sucesso!');
     }
   };
+
+  useEffect(() => {
+    if (autoProcess === 'true' && esusFile?.buffer && siapsFile?.buffer && !isProcessing) {
+      handleProcessar();
+    }
+  }, [autoProcess]);
 
   const handleExportar = () => {
     const statusFiltroReal =
@@ -550,6 +585,121 @@ export default function CruzamentoWorkspacePage() {
             </motion.button>
           </div>
         </section>
+
+        {/* Modal Overlay de Animação Rica de Processamento Analítico */}
+        <AnimatePresence>
+          {isProcessing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-[#060e20]/80 backdrop-blur-xl flex flex-col items-center justify-center p-6"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="bg-surface-container rounded-2xl border border-primary/30 shadow-2xl p-8 max-w-lg w-full flex flex-col items-center text-center relative overflow-hidden"
+              >
+                {/* Glow backdrop pulse */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-transparent pointer-events-none animate-pulse"></div>
+
+                {/* Orbiting animated icon */}
+                <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-primary/40 animate-[spin_8s_linear_infinite]"></div>
+                  <div className="absolute inset-2 rounded-full border-2 border-secondary/30 animate-[spin_4s_linear_infinite_reverse]"></div>
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center shadow-lg shadow-primary/20 text-primary">
+                    <Cpu className="w-8 h-8 animate-pulse" />
+                  </div>
+                </div>
+
+                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1 flex items-center gap-2 font-bold">
+                  <Sparkles className="w-5 h-5 text-secondary" /> Processamento Analítico COMPARA-SUS
+                </h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mb-6">
+                  Higienizando documentos e efetuando data matching em memória RAM local.
+                </p>
+
+                {/* Animated Progress Bar */}
+                <div className="w-full bg-surface-container-highest rounded-full h-3 mb-6 overflow-hidden border border-outline-variant/20 p-0.5">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-primary via-secondary to-primary rounded-full shadow-[0_0_12px_rgba(78,222,163,0.5)]"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </div>
+
+                {/* Steps List */}
+                <div className="w-full flex flex-col gap-3 text-left mb-6">
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      processingStep >= 0
+                        ? 'bg-surface border-primary/30 text-on-surface'
+                        : 'bg-surface/40 border-outline-variant/10 text-on-surface-variant/50'
+                    }`}
+                  >
+                    {processingStep > 0 ? (
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
+                    ) : (
+                      <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-label-md text-xs font-semibold">1. Leitura e Limpeza Regex de Documentos</span>
+                      <span className="text-[11px] text-on-surface-variant">Normalizando CPFs (11 dígitos) e CNSs (15 dígitos)</span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      processingStep >= 1
+                        ? 'bg-surface border-primary/30 text-on-surface'
+                        : 'bg-surface/40 border-outline-variant/10 text-on-surface-variant/50'
+                    }`}
+                  >
+                    {processingStep > 1 ? (
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
+                    ) : processingStep === 1 ? (
+                      <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+                    ) : (
+                      <FileCheck className="w-5 h-5 text-on-surface-variant/30 shrink-0" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-label-md text-xs font-semibold">2. Cruzamento de Matrizes e-SUS vs SIAPS</span>
+                      <span className="text-[11px] text-on-surface-variant">Agrupando registros por equipe de saúde e resolvendo nomes</span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      processingStep >= 2
+                        ? 'bg-surface border-primary/30 text-on-surface'
+                        : 'bg-surface/40 border-outline-variant/10 text-on-surface-variant/50'
+                    }`}
+                  >
+                    {processingProgress === 100 ? (
+                      <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
+                    ) : processingStep === 2 ? (
+                      <Loader2 className="w-5 h-5 text-primary animate-spin shrink-0" />
+                    ) : (
+                      <FileCheck className="w-5 h-5 text-on-surface-variant/30 shrink-0" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-label-md text-xs font-semibold">3. Consolidação e Indicadores em Tempo Real</span>
+                      <span className="text-[11px] text-on-surface-variant">Construindo tabela analítica e métricas do painel</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Security Tag */}
+                <div className="flex items-center justify-center gap-2 text-[11px] text-on-surface-variant bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant/20">
+                  <Lock className="w-3.5 h-3.5 text-secondary shrink-0" />
+                  <span>Processamento 100% Client-Side no Navegador (Zero Storage LGPD)</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </PageTransition>
   );
