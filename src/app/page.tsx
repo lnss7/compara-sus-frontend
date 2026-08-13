@@ -84,7 +84,7 @@ export default function ImportacaoPage() {
   };
 
   const handleIniciarProcessamento = () => {
-    router.push('/cruzamento?autoProcess=true');
+    router.push('/cruzamento');
   };
 
   const temEsus = arquivos.some((a) => a.tipo === 'e-SUS AB');
@@ -92,11 +92,10 @@ export default function ImportacaoPage() {
   const prontoParaProcessar = temEsus && temSiaps;
 
   const getTextoBotaoProcessar = () => {
-    if (isProcessing) return 'Redirecionando para o Dashboard...';
     if (!temEsus && !temSiaps) return 'Anexe as 2 Planilhas (e-SUS e SIAPS) para Avançar';
     if (temEsus && !temSiaps) return 'Falta Anexar a Base SIAPS (1/2 Carregado)';
     if (!temEsus && temSiaps) return 'Falta Anexar a Base e-SUS (1/2 Carregado)';
-    return 'Ir para o Dashboard e Iniciar Processamento (2/2 Prontos)';
+    return 'Ir para o Dashboard (2/2 Prontos)';
   };
 
   return (
