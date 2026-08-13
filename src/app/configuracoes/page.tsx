@@ -4,15 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PageTransition } from '@/components/animation/PageTransition';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { ShieldCheck, Sliders, Plug, Info, Save, Shield, Palette } from 'lucide-react';
+import { ShieldCheck, Sliders, Plug, Info, Save, Shield, Palette, Lock, CheckCircle2 } from 'lucide-react';
 import { useCrossSUSStore } from '@/lib/store';
 
 export default function ConfiguracoesPage() {
   const { theme, setTheme } = useCrossSUSStore();
   const [activeTab, setActiveTab] = useState<'seguranca' | 'preferencias' | 'integracoes' | 'sobre'>('seguranca');
-  const [autoDestruct, setAutoDestruct] = useState(true);
-  const [maskCpf, setMaskCpf] = useState(true);
-  const [localAudit, setLocalAudit] = useState(false);
 
   return (
     <PageTransition>
@@ -92,83 +89,47 @@ export default function ConfiguracoesPage() {
                   <ShieldCheck className="w-6 h-6 text-primary" /> Segurança e Privacidade
                 </h2>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                  Configurações críticas de proteção de dados (LGPD).
+                  Diretrizes institucionais de proteção de dados e auditoria (LGPD).
                 </p>
               </div>
+
               <div className="flex flex-col gap-4">
-                {/* Toggle 1: Autodestruição */}
-                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/10">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-label-md text-label-md text-on-surface">
-                      Autodestruição de Dados ao Sair
-                    </span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">
-                      Limpa o cache local e memória RAM ao fechar o navegador.
+                {/* Card Informativo 1: Autodestruição de Dados ao Sair */}
+                <div className="flex items-start justify-between p-4 bg-surface rounded-xl border border-outline-variant/10">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-label-md text-label-md text-on-surface font-semibold">
+                        Autodestruição de Dados ao Sair
+                      </span>
+                      <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Sempre Ativo (LGPD)
+                      </span>
+                    </div>
+                    <span className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                      Limpador automático de memória RAM e cache local. Todos os dados das planilhas são apagados imediatamente ao encerrar a sessão ou fechar a aba do navegador.
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setAutoDestruct(!autoDestruct)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      autoDestruct ? 'bg-primary-container' : 'bg-surface-container-highest'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        autoDestruct ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
                 </div>
 
-                {/* Toggle 2: Mascaramento de CPF */}
-                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/10">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-label-md text-label-md text-on-surface">
-                      Mascaramento de CPF
-                    </span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">
-                      Oculta os primeiros dígitos (ex: ***.***.123-45).
-                    </span>
+                {/* Card Informativo 2: Auditoria e Monitoramento de Acesso */}
+                <div className="flex items-start gap-4 p-4 bg-surface rounded-xl border border-outline-variant/10">
+                  <div className="p-2.5 rounded-lg bg-primary-container/20 text-primary mt-0.5 shrink-0">
+                    <Lock className="w-5 h-5" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setMaskCpf(!maskCpf)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      maskCpf ? 'bg-primary-container' : 'bg-surface-container-highest'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        maskCpf ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Toggle 3: Logs de Auditoria Local */}
-                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/10">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-label-md text-label-md text-on-surface">
-                      Logs de Auditoria Local
+                  <div className="flex flex-col gap-2">
+                    <span className="font-label-md text-label-md text-on-surface font-semibold">
+                      Auditoria e Monitoramento de Acesso
                     </span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant">
-                      Registra ações no console local (não enviado ao servidor).
-                    </span>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                      Todas as ações realizadas nesta estação são registradas para fins de segurança, governança e monitoramento institucional.
+                    </p>
+                    <div className="p-3.5 rounded-xl bg-surface-container-high border border-outline-variant/20 flex items-start gap-2.5 text-xs text-on-surface-variant">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span className="leading-normal">
+                        <strong className="text-on-surface font-semibold">Garantia de Privacidade (Auditoria Cega):</strong> Os registros e dados pessoais de pacientes <strong>NUNCA são salvos ou enviados para banco de dados</strong>. O sistema grava exclusivamente quem acessou (operador), o horário e o tipo de operação realizada.
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocalAudit(!localAudit)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      localAudit ? 'bg-primary-container' : 'bg-surface-container-highest'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        localAudit ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
                 </div>
               </div>
             </section>
