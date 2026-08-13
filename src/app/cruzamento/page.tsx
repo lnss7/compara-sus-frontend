@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/animation/PageTransition';
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useComparaSUSStore } from '@/lib/store';
 
-export default function CruzamentoWorkspacePage() {
+function CruzamentoWorkspaceContent() {
   const searchParams = useSearchParams();
   const autoProcess = searchParams.get('autoProcess');
 
@@ -702,5 +702,19 @@ export default function CruzamentoWorkspacePage() {
         </AnimatePresence>
       </div>
     </PageTransition>
+  );
+}
+
+export default function CruzamentoWorkspacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh] text-on-surface">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <CruzamentoWorkspaceContent />
+    </Suspense>
   );
 }
